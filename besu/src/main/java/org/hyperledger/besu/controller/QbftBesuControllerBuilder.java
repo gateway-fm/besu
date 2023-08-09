@@ -270,7 +270,8 @@ public class QbftBesuControllerBuilder extends BftBesuControllerBuilder {
             bftProcessor,
             blockCreatorFactory,
             blockchain,
-            bftEventQueue);
+            bftEventQueue,
+                0L);
     miningCoordinator.enable();
 
     return miningCoordinator;

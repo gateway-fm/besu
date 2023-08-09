@@ -56,6 +56,7 @@ public class MiningParameters {
   private final int maxOmmerDepth;
   private final long posBlockCreationMaxTime;
   private final long posBlockCreationRepetitionMinDuration;
+  private final long stopBlock;
 
   private MiningParameters(
       final Address coinbase,
@@ -74,7 +75,8 @@ public class MiningParameters {
       final long powJobTimeToLive,
       final int maxOmmerDepth,
       final long posBlockCreationMaxTime,
-      final long posBlockCreationRepetitionMinDuration) {
+      final long posBlockCreationRepetitionMinDuration,
+      final long stopBlock) {
     this.coinbase = Optional.ofNullable(coinbase);
     this.targetGasLimit = Optional.ofNullable(targetGasLimit).map(AtomicLong::new);
     this.minTransactionGasPrice = minTransactionGasPrice;
@@ -92,6 +94,7 @@ public class MiningParameters {
     this.maxOmmerDepth = maxOmmerDepth;
     this.posBlockCreationMaxTime = posBlockCreationMaxTime;
     this.posBlockCreationRepetitionMinDuration = posBlockCreationRepetitionMinDuration;
+    this.stopBlock = stopBlock;
   }
 
   public Optional<Address> getCoinbase() {
@@ -161,6 +164,8 @@ public class MiningParameters {
   public long getPosBlockCreationRepetitionMinDuration() {
     return posBlockCreationRepetitionMinDuration;
   }
+
+  public long getStopBlock() { return this.stopBlock; }
 
   @Override
   public boolean equals(final Object o) {
@@ -262,6 +267,7 @@ public class MiningParameters {
     private long powJobTimeToLive = DEFAULT_POW_JOB_TTL;
     private int maxOmmerDepth = DEFAULT_MAX_OMMERS_DEPTH;
     private long posBlockCreationMaxTime = DEFAULT_POS_BLOCK_CREATION_MAX_TIME;
+    private long stopBlock;
 
     private long posBlockCreationRepetitionMinDuration =
         DEFAULT_POS_BLOCK_CREATION_REPETITION_MIN_DURATION;
@@ -292,6 +298,7 @@ public class MiningParameters {
       this.posBlockCreationMaxTime = existing.getPosBlockCreationMaxTime();
       this.posBlockCreationRepetitionMinDuration =
           existing.getPosBlockCreationRepetitionMinDuration();
+      this.stopBlock = existing.getStopBlock();
     }
 
     public Builder coinbase(final Address address) {
@@ -380,6 +387,11 @@ public class MiningParameters {
       return this;
     }
 
+    public Builder stopBlock(final long stopBlock) {
+      this.stopBlock = stopBlock;
+      return this;
+    }
+
     public MiningParameters build() {
       return new MiningParameters(
           coinbase,
@@ -398,7 +410,8 @@ public class MiningParameters {
           powJobTimeToLive,
           maxOmmerDepth,
           posBlockCreationMaxTime,
-          posBlockCreationRepetitionMinDuration);
+          posBlockCreationRepetitionMinDuration,
+              stopBlock);
     }
   }
 }

@@ -14,6 +14,7 @@
  */
 package org.hyperledger.besu.ethereum.eth.sync.fullsync;
 
+import org.apache.commons.lang3.builder.Diff;
 import org.hyperledger.besu.datatypes.Hash;
 import org.hyperledger.besu.ethereum.chain.Blockchain;
 import org.hyperledger.besu.ethereum.core.Difficulty;
@@ -69,6 +70,14 @@ public interface SyncTerminationCondition extends BooleanSupplier {
         blockchain.getChainHead().getTotalDifficulty().greaterOrEqualThan(targetDifficulty);
   }
 
+  static SyncTerminationCondition height(
+    final long stopBlock, final Blockchain blockchain) {
+    return () ->
+    {
+      return blockchain.getChainHead().getBlockHeader().getNumber() >= stopBlock;
+    };
+  }
+
   /**
    * When we want the full sync to finish on a target hash. For instance when we reach a merge
    * checkpoint.
@@ -81,4 +90,5 @@ public interface SyncTerminationCondition extends BooleanSupplier {
       final Hash blockHash, final Blockchain blockchain) {
     return new FlexibleBlockHashTerminalCondition(blockHash, blockchain);
   }
+
 }

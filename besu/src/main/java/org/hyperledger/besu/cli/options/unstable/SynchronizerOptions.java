@@ -84,6 +84,8 @@ public class SynchronizerOptions implements CLIOptions<SynchronizerConfiguration
 
   private static final String CHECKPOINT_POST_MERGE_FLAG = "--Xcheckpoint-post-merge-enabled";
 
+  private static final String STOP_BLOCK = "--sync-stop-block";
+
   /**
    * Parse block propagation range.
    *
@@ -325,6 +327,12 @@ public class SynchronizerOptions implements CLIOptions<SynchronizerConfiguration
   private Boolean checkpointPostMergeSyncEnabled =
       SynchronizerConfiguration.DEFAULT_CHECKPOINT_POST_MERGE_ENABLED;
 
+  @CommandLine.Option(
+          names = STOP_BLOCK,
+          description = "The height to stop syncing blocks at"
+  )
+  private Integer stopBlock = 0;
+
   private SynchronizerOptions() {}
 
   /**
@@ -422,6 +430,7 @@ public class SynchronizerOptions implements CLIOptions<SynchronizerConfiguration
             .isFlatDbHealingEnabled(snapsyncFlatDbHealingEnabled)
             .build());
     builder.checkpointPostMergeEnabled(checkpointPostMergeSyncEnabled);
+    builder.stopBlock(stopBlock);
 
     return builder;
   }

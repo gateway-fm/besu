@@ -21,6 +21,8 @@ import org.hyperledger.besu.consensus.merge.UnverifiedForkchoiceListener;
 import org.hyperledger.besu.datatypes.Address;
 import org.hyperledger.besu.ethereum.ProtocolContext;
 import org.hyperledger.besu.ethereum.bonsai.BonsaiWorldStateProvider;
+import org.hyperledger.besu.ethereum.chain.Blockchain;
+import org.hyperledger.besu.ethereum.chain.ChainHead;
 import org.hyperledger.besu.ethereum.core.Synchronizer;
 import org.hyperledger.besu.ethereum.eth.manager.EthContext;
 import org.hyperledger.besu.ethereum.eth.sync.checkpointsync.CheckpointDownloaderFactory;
@@ -101,8 +103,10 @@ public class DefaultSynchronizer implements Synchronizer, UnverifiedForkchoiceLi
         this::calculateTrailingPeerRequirements,
         metricsSystem);
 
+    var shouldStop = terminationCondition.shouldStopDownload();
+
     this.blockPropagationManager =
-        terminationCondition.shouldStopDownload()
+        shouldStop
             ? Optional.empty()
             : Optional.of(
                 new BlockPropagationManager(
@@ -116,7 +120,7 @@ public class DefaultSynchronizer implements Synchronizer, UnverifiedForkchoiceLi
                     blockBroadcaster));
 
     this.fullSyncDownloader =
-        terminationCondition.shouldStopDownload()
+        shouldStop
             ? Optional.empty()
             : Optional.of(
                 new FullSyncDownloader(
@@ -128,54 +132,58 @@ public class DefaultSynchronizer implements Synchronizer, UnverifiedForkchoiceLi
                     metricsSystem,
                     terminationCondition));
 
-    if (SyncMode.FAST.equals(syncConfig.getSyncMode())) {
-      this.fastSyncFactory =
-          () ->
-              FastDownloaderFactory.create(
-                  pivotBlockSelector,
-                  syncConfig,
-                  dataDirectory,
-                  protocolSchedule,
-                  protocolContext,
-                  metricsSystem,
-                  ethContext,
-                  worldStateStorage,
-                  syncState,
-                  clock);
-    } else if (SyncMode.X_CHECKPOINT.equals(syncConfig.getSyncMode())) {
-      this.fastSyncFactory =
-          () ->
-              CheckpointDownloaderFactory.createCheckpointDownloader(
-                  new SnapSyncStatePersistenceManager(storageProvider),
-                  pivotBlockSelector,
-                  syncConfig,
-                  dataDirectory,
-                  protocolSchedule,
-                  protocolContext,
-                  metricsSystem,
-                  ethContext,
-                  worldStateStorage,
-                  syncState,
-                  clock);
-    } else {
-      this.fastSyncFactory =
-          () ->
-              SnapDownloaderFactory.createSnapDownloader(
-                  new SnapSyncStatePersistenceManager(storageProvider),
-                  pivotBlockSelector,
-                  syncConfig,
-                  dataDirectory,
-                  protocolSchedule,
-                  protocolContext,
-                  metricsSystem,
-                  ethContext,
-                  worldStateStorage,
-                  syncState,
-                  clock);
-    }
+      if (SyncMode.FAST.equals(syncConfig.getSyncMode())) {
+        this.fastSyncFactory =
+                () ->
+                        FastDownloaderFactory.create(
+                                pivotBlockSelector,
+                                syncConfig,
+                                dataDirectory,
+                                protocolSchedule,
+                                protocolContext,
+                                metricsSystem,
+                                ethContext,
+                                worldStateStorage,
+                                syncState,
+                                clock);
+      } else if (SyncMode.X_CHECKPOINT.equals(syncConfig.getSyncMode())) {
+        this.fastSyncFactory =
+                () ->
+                        CheckpointDownloaderFactory.createCheckpointDownloader(
+                                new SnapSyncStatePersistenceManager(storageProvider),
+                                pivotBlockSelector,
+                                syncConfig,
+                                dataDirectory,
+                                protocolSchedule,
+                                protocolContext,
+                                metricsSystem,
+                                ethContext,
+                                worldStateStorage,
+                                syncState,
+                                clock);
+      } else {
+        this.fastSyncFactory =
+                () ->
+                        SnapDownloaderFactory.createSnapDownloader(
+                                new SnapSyncStatePersistenceManager(storageProvider),
+                                pivotBlockSelector,
+                                syncConfig,
+                                dataDirectory,
+                                protocolSchedule,
+                                protocolContext,
+                                metricsSystem,
+                                ethContext,
+                                worldStateStorage,
+                                syncState,
+                                clock);
+      }
+
 
     // create a non-resync fast sync downloader:
-    this.fastSyncDownloader = this.fastSyncFactory.get();
+    this.fastSyncDownloader =
+            shouldStop
+              ? Optional.empty()
+              : this.fastSyncFactory.get();
 
     metricsSystem.createLongGauge(
         BesuMetricCategory.ETHEREUM,
@@ -200,6 +208,12 @@ public class DefaultSynchronizer implements Synchronizer, UnverifiedForkchoiceLi
 
   @Override
   public CompletableFuture<Void> start() {
+      if (terminationCondition.shouldStopDownload()) {
+          running.compareAndSet(false, true);
+          LOG.info("Not starting synchronizer due to stop block configuration");
+          return CompletableFuture.completedFuture(null);
+      }
+
     if (running.compareAndSet(false, true)) {
       LOG.info("Starting synchronizer.");
       blockPropagationManager.ifPresent(

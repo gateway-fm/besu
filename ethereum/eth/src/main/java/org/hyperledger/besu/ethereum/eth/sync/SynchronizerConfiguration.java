@@ -85,6 +85,7 @@ public class SynchronizerConfiguration {
   private final int maxTrailingPeers;
   private final long worldStateMinMillisBeforeStalling;
   private final long propagationManagerGetBlockTimeoutMillis;
+  private final long stopBlock;
 
   private SynchronizerConfiguration(
       final int fastSyncPivotDistance,
@@ -108,7 +109,8 @@ public class SynchronizerConfiguration {
       final int computationParallelism,
       final int maxTrailingPeers,
       final long propagationManagerGetBlockTimeoutMillis,
-      final boolean checkpointPostMergeEnabled) {
+      final boolean checkpointPostMergeEnabled,
+      final long stopBlock) {
     this.fastSyncPivotDistance = fastSyncPivotDistance;
     this.fastSyncFullValidationRate = fastSyncFullValidationRate;
     this.fastSyncMinimumPeerCount = fastSyncMinimumPeerCount;
@@ -131,6 +133,7 @@ public class SynchronizerConfiguration {
     this.maxTrailingPeers = maxTrailingPeers;
     this.propagationManagerGetBlockTimeoutMillis = propagationManagerGetBlockTimeoutMillis;
     this.checkpointPostMergeEnabled = checkpointPostMergeEnabled;
+    this.stopBlock = stopBlock;
   }
 
   public static Builder builder() {
@@ -254,6 +257,8 @@ public class SynchronizerConfiguration {
     return propagationManagerGetBlockTimeoutMillis;
   }
 
+  public long getStopBlock() { return this.stopBlock; }
+
   public static class Builder {
     private SyncMode syncMode = SyncMode.FULL;
     private int fastSyncMinimumPeerCount = DEFAULT_FAST_SYNC_MINIMUM_PEERS;
@@ -283,6 +288,8 @@ public class SynchronizerConfiguration {
     private long propagationManagerGetBlockTimeoutMillis =
         DEFAULT_PROPAGATION_MANAGER_GET_BLOCK_TIMEOUT_MILLIS;
     private boolean checkpointPostMergeEnabled = DEFAULT_CHECKPOINT_POST_MERGE_ENABLED;
+
+    private long stopBlock;
 
     public Builder fastSyncPivotDistance(final int distance) {
       fastSyncPivotDistance = distance;
@@ -406,6 +413,11 @@ public class SynchronizerConfiguration {
       return this;
     }
 
+    public Builder stopBlock(final long stopBlock) {
+      this.stopBlock = stopBlock;
+      return this;
+    }
+
     public SynchronizerConfiguration build() {
       return new SynchronizerConfiguration(
           fastSyncPivotDistance,
@@ -429,7 +441,8 @@ public class SynchronizerConfiguration {
           computationParallelism,
           maxTrailingPeers,
           propagationManagerGetBlockTimeoutMillis,
-          checkpointPostMergeEnabled);
+          checkpointPostMergeEnabled,
+              stopBlock);
     }
   }
 }

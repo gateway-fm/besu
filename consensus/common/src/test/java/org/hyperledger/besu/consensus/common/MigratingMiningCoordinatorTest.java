@@ -106,7 +106,8 @@ public class MigratingMiningCoordinatorTest {
         mock(BftProcessor.class),
         mock(BftBlockCreatorFactory.class),
         blockchain,
-        mock(BftEventQueue.class));
+        mock(BftEventQueue.class),
+            0L);
   }
 
   @Test

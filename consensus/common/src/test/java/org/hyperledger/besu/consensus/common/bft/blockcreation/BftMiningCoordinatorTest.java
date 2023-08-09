@@ -58,7 +58,7 @@ public class BftMiningCoordinatorTest {
   public void setup() {
     bftMiningCoordinator =
         new BftMiningCoordinator(
-            bftExecutors, controller, bftProcessor, bftBlockCreatorFactory, blockChain, eventQueue);
+            bftExecutors, controller, bftProcessor, bftBlockCreatorFactory, blockChain, eventQueue, 0L);
     when(block.getBody()).thenReturn(blockBody);
     when(block.getHeader()).thenReturn(blockHeader);
     when(blockBody.getTransactions()).thenReturn(Collections.emptyList());

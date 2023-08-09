@@ -204,6 +204,11 @@ public class BlockPropagationManager implements UnverifiedForkchoiceListener {
       final long cutoff = head + config.getBlockPropagationRange().lowerEndpoint();
       pendingBlocksManager.purgeBlocksOlderThan(cutoff);
     }
+
+    if (config.getStopBlock() > 0 && newBlock.getHeader().getNumber() >= config.getStopBlock()) {
+      LOG.info("Stopping block propagation manager due to stop block config: " + config.getStopBlock());
+      stop();
+    }
   }
 
   /**

@@ -62,6 +62,7 @@ public class BftMiningCoordinator implements MiningCoordinator, BlockAddedObserv
 
   private long blockAddedObserverId;
   private final AtomicReference<State> state = new AtomicReference<>(State.IDLE);
+  private final long stopBlock;
 
   /**
    * Instantiates a new Bft mining coordinator.
@@ -79,18 +80,26 @@ public class BftMiningCoordinator implements MiningCoordinator, BlockAddedObserv
       final BftProcessor bftProcessor,
       final BftBlockCreatorFactory<?> blockCreatorFactory,
       final Blockchain blockchain,
-      final BftEventQueue eventQueue) {
+      final BftEventQueue eventQueue,
+      final long stopBlock) {
     this.bftExecutors = bftExecutors;
     this.eventHandler = eventHandler;
     this.bftProcessor = bftProcessor;
     this.blockCreatorFactory = blockCreatorFactory;
     this.eventQueue = eventQueue;
-
+    this.stopBlock = stopBlock;
     this.blockchain = blockchain;
   }
 
   @Override
   public void start() {
+    var head = this.blockchain.getChainHead().getBlockHeader().getNumber();
+    if (this.stopBlock > 0 && head >= this.stopBlock) {
+      LOG.info("Not starting mining due to stop block configuration");
+      state.compareAndSet(State.IDLE, State.RUNNING);
+      return;
+    }
+
     if (state.compareAndSet(State.IDLE, State.RUNNING)) {
       bftExecutors.start();
       blockAddedObserverId = blockchain.observeBlockAdded(this);
@@ -175,6 +184,11 @@ public class BftMiningCoordinator implements MiningCoordinator, BlockAddedObserv
     if (event.isNewCanonicalHead()) {
       LOG.trace("New canonical head detected");
       eventQueue.add(new NewChainHead(event.getBlock().getHeader()));
+
+      // stop if we have hit the terminate block
+      if (this.stopBlock > 0 && event.getBlock().getHeader().getNumber() >= this.stopBlock) {
+        stop();
+      }
     }
   }
 
