@@ -93,8 +93,7 @@ public class BftMiningCoordinator implements MiningCoordinator, BlockAddedObserv
 
   @Override
   public void start() {
-    var head = this.blockchain.getChainHead().getBlockHeader().getNumber();
-    if (this.stopBlock > 0 && head >= this.stopBlock) {
+    if (stopBlock > 0 && blockchain.getChainHeadBlockNumber() >= stopBlock) {
       LOG.info("Not starting mining due to stop block configuration");
       state.compareAndSet(State.IDLE, State.RUNNING);
       return;
@@ -184,11 +183,6 @@ public class BftMiningCoordinator implements MiningCoordinator, BlockAddedObserv
     if (event.isNewCanonicalHead()) {
       LOG.trace("New canonical head detected");
       eventQueue.add(new NewChainHead(event.getBlock().getHeader()));
-
-      // stop if we have hit the terminate block
-      if (this.stopBlock > 0 && event.getBlock().getHeader().getNumber() >= this.stopBlock) {
-        stop();
-      }
     }
   }
 

@@ -47,6 +47,7 @@ public abstract class BaseBftController implements BftEventHandler {
   private final SynchronizerUpdater sychronizerUpdater;
 
   private final AtomicBoolean started = new AtomicBoolean(false);
+  final long stopBlock;
 
   /**
    * Instantiates a new Base bft controller.
@@ -57,6 +58,7 @@ public abstract class BaseBftController implements BftEventHandler {
    * @param duplicateMessageTracker the duplicate message tracker
    * @param futureMessageBuffer the future message buffer
    * @param sychronizerUpdater the synchronizer updater
+   * @param stopBlock the block height at which to stop processing bft messages
    */
   protected BaseBftController(
       final Blockchain blockchain,
@@ -64,13 +66,15 @@ public abstract class BaseBftController implements BftEventHandler {
       final Gossiper gossiper,
       final MessageTracker duplicateMessageTracker,
       final FutureMessageBuffer futureMessageBuffer,
-      final SynchronizerUpdater sychronizerUpdater) {
+      final SynchronizerUpdater sychronizerUpdater,
+      final long stopBlock) {
     this.blockchain = blockchain;
     this.bftFinalState = bftFinalState;
     this.futureMessageBuffer = futureMessageBuffer;
     this.gossiper = gossiper;
     this.duplicateMessageTracker = duplicateMessageTracker;
     this.sychronizerUpdater = sychronizerUpdater;
+    this.stopBlock = stopBlock;
   }
 
   @Override
@@ -109,6 +113,13 @@ public abstract class BaseBftController implements BftEventHandler {
   protected <P extends BftMessage<?>> void consumeMessage(
       final Message message, final P bftMessage, final Consumer<P> handleMessage) {
     LOG.trace("Received BFT {} message", bftMessage.getClass().getSimpleName());
+
+    // if the chain head is at the stop block don't consume the message, we should not
+    // be proposing new blocks at this point
+    if (stopBlock > 0 && blockchain.getChainHeadBlockNumber() >= stopBlock) {
+      LOG.trace("Ignoring BFT message due to stop block: " + stopBlock);
+      return;
+    }
 
     // Discard all messages which target the BLOCKCHAIN height (which SHOULD be 1 less than
     // the currentHeightManager, but CAN be the same directly following import).
