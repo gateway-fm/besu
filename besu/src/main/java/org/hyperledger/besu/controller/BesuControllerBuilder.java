@@ -487,7 +487,7 @@ public abstract class BesuControllerBuilder implements MiningParameterOverrides 
             dataDirectory,
             clock,
             metricsSystem,
-            getFullSyncTerminationCondition(protocolContext.getBlockchain()),
+            getFullSyncTerminationCondition(protocolContext.getBlockchain(), syncConfig.getStopBlock()),
             pivotBlockSelector);
 
     return toUse;
@@ -528,12 +528,16 @@ public abstract class BesuControllerBuilder implements MiningParameterOverrides 
     }
   }
 
-  protected SyncTerminationCondition getFullSyncTerminationCondition(final Blockchain blockchain) {
-    return configOptionsSupplier
-        .get()
-        .getTerminalTotalDifficulty()
-        .map(difficulty -> SyncTerminationCondition.difficulty(difficulty, blockchain))
-        .orElse(SyncTerminationCondition.never());
+  protected SyncTerminationCondition getFullSyncTerminationCondition(final Blockchain blockchain, final long stopBlock) {
+    if (stopBlock > 0) {
+      return SyncTerminationCondition.height(stopBlock, blockchain);
+    } else {
+      return configOptionsSupplier
+              .get()
+              .getTerminalTotalDifficulty()
+              .map(difficulty -> SyncTerminationCondition.difficulty(difficulty, blockchain))
+              .orElse(SyncTerminationCondition.never());
+    }
   }
 
   protected void prepForBuild() {}

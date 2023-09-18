@@ -72,6 +72,8 @@ public class SynchronizerOptions implements CLIOptions<SynchronizerConfiguration
   private static final String SNAP_TRIENODE_COUNT_PER_REQUEST_FLAG =
       "--Xsnapsync-synchronizer-trienode-count-per-request";
 
+  private static final String STOP_BLOCK = "--sync-stop-block";
+
   @CommandLine.Option(
       names = BLOCK_PROPAGATION_RANGE_FLAG,
       hidden = true,
@@ -272,6 +274,12 @@ public class SynchronizerOptions implements CLIOptions<SynchronizerConfiguration
   private int snapsyncTrieNodeCountPerRequest =
       SnapSyncConfiguration.DEFAULT_TRIENODE_COUNT_PER_REQUEST;
 
+  @CommandLine.Option(
+          names = STOP_BLOCK,
+          description = "The height to stop syncing blocks at"
+  )
+  private final Integer stopBlock = 0;
+
   private SynchronizerOptions() {}
 
   public static SynchronizerOptions create() {
@@ -338,6 +346,7 @@ public class SynchronizerOptions implements CLIOptions<SynchronizerConfiguration
             .bytecodeCountPerRequest(snapsyncBytecodeCountPerRequest)
             .trienodeCountPerRequest(snapsyncTrieNodeCountPerRequest)
             .build());
+    builder.withStockBlock(stopBlock);
 
     return builder;
   }

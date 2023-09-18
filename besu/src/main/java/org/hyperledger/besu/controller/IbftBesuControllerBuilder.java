@@ -215,7 +215,8 @@ public class IbftBesuControllerBuilder extends BftBesuControllerBuilder {
             gossiper,
             duplicateMessageTracker,
             futureMessageBuffer,
-            new EthSynchronizerUpdater(ethProtocolManager.ethContext().getEthPeers()));
+            new EthSynchronizerUpdater(ethProtocolManager.ethContext().getEthPeers()),
+                miningParameters.getStopBlock());
 
     final EventMultiplexer eventMultiplexer = new EventMultiplexer(ibftController);
     final BftProcessor bftProcessor = new BftProcessor(bftEventQueue, eventMultiplexer);
@@ -227,7 +228,8 @@ public class IbftBesuControllerBuilder extends BftBesuControllerBuilder {
             bftProcessor,
             blockCreatorFactory,
             blockchain,
-            bftEventQueue);
+            bftEventQueue,
+                miningParameters.getStopBlock());
     ibftMiningCoordinator.enable();
 
     return ibftMiningCoordinator;

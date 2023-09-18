@@ -80,6 +80,7 @@ public class SynchronizerConfiguration {
   private final int maxTrailingPeers;
   private final long worldStateMinMillisBeforeStalling;
   private final long propagationManagerGetBlockTimeoutMillis;
+  private final long stopBlock;
 
   private SynchronizerConfiguration(
       final int fastSyncPivotDistance,
@@ -102,7 +103,8 @@ public class SynchronizerConfiguration {
       final int transactionsParallelism,
       final int computationParallelism,
       final int maxTrailingPeers,
-      final long propagationManagerGetBlockTimeoutMillis) {
+      final long propagationManagerGetBlockTimeoutMillis,
+      final long stopBlock) {
     this.fastSyncPivotDistance = fastSyncPivotDistance;
     this.fastSyncFullValidationRate = fastSyncFullValidationRate;
     this.fastSyncMinimumPeerCount = fastSyncMinimumPeerCount;
@@ -124,6 +126,7 @@ public class SynchronizerConfiguration {
     this.computationParallelism = computationParallelism;
     this.maxTrailingPeers = maxTrailingPeers;
     this.propagationManagerGetBlockTimeoutMillis = propagationManagerGetBlockTimeoutMillis;
+    this.stopBlock = stopBlock;
   }
 
   public static Builder builder() {
@@ -243,6 +246,8 @@ public class SynchronizerConfiguration {
     return propagationManagerGetBlockTimeoutMillis;
   }
 
+  public long getStopBlock() { return this.stopBlock; }
+
   public static class Builder {
     private SyncMode syncMode = SyncMode.FULL;
     private int fastSyncMinimumPeerCount = DEFAULT_FAST_SYNC_MINIMUM_PEERS;
@@ -268,6 +273,8 @@ public class SynchronizerConfiguration {
         DEFAULT_WORLD_STATE_MAX_REQUESTS_WITHOUT_PROGRESS;
     private long worldStateMinMillisBeforeStalling = DEFAULT_WORLD_STATE_MIN_MILLIS_BEFORE_STALLING;
     private int worldStateTaskCacheSize = DEFAULT_WORLD_STATE_TASK_CACHE_SIZE;
+    private long stopBlock;
+
 
     private long propagationManagerGetBlockTimeoutMillis =
         DEFAULT_PROPAGATION_MANAGER_GET_BLOCK_TIMEOUT_MILLIS;
@@ -389,6 +396,11 @@ public class SynchronizerConfiguration {
       return this;
     }
 
+    public Builder withStockBlock(final long stopBlock) {
+      this.stopBlock = stopBlock;
+      return this;
+    }
+
     public SynchronizerConfiguration build() {
       return new SynchronizerConfiguration(
           fastSyncPivotDistance,
@@ -411,7 +423,8 @@ public class SynchronizerConfiguration {
           transactionsParallelism,
           computationParallelism,
           maxTrailingPeers,
-          propagationManagerGetBlockTimeoutMillis);
+          propagationManagerGetBlockTimeoutMillis,
+              stopBlock);
     }
   }
 }

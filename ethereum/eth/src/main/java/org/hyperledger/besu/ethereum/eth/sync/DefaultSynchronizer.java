@@ -98,8 +98,10 @@ public class DefaultSynchronizer implements Synchronizer, ForkchoiceMessageListe
         this::calculateTrailingPeerRequirements,
         metricsSystem);
 
+    var shouldStop = terminationCondition.shouldStopDownload();
+
     this.blockPropagationManager =
-        terminationCondition.shouldStopDownload()
+        shouldStop
             ? Optional.empty()
             : Optional.of(
                 new BlockPropagationManager(
@@ -113,7 +115,7 @@ public class DefaultSynchronizer implements Synchronizer, ForkchoiceMessageListe
                     blockBroadcaster));
 
     this.fullSyncDownloader =
-        terminationCondition.shouldStopDownload()
+        shouldStop
             ? Optional.empty()
             : Optional.of(
                 new FullSyncDownloader(
@@ -189,6 +191,12 @@ public class DefaultSynchronizer implements Synchronizer, ForkchoiceMessageListe
 
   @Override
   public CompletableFuture<Void> start() {
+    if (terminationCondition.shouldStopDownload()) {
+      running.compareAndSet(false, true);
+      LOG.info("Not starting synchronizer due to stop block configuration");
+      return CompletableFuture.completedFuture(null);
+    }
+
     if (running.compareAndSet(false, true)) {
       LOG.info("Starting synchronizer.");
       blockPropagationManager.ifPresent(

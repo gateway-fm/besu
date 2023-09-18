@@ -124,7 +124,8 @@ public class IbftControllerTest {
             ibftGossip,
             messageTracker,
             futureMessageBuffer,
-            mock(EthSynchronizerUpdater.class));
+            mock(EthSynchronizerUpdater.class),
+                0);
   }
 
   @Test

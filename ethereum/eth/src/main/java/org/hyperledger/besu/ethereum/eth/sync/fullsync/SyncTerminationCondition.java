@@ -69,6 +69,12 @@ public interface SyncTerminationCondition extends BooleanSupplier {
         blockchain.getChainHead().getTotalDifficulty().greaterOrEqualThan(targetDifficulty);
   }
 
+  static SyncTerminationCondition height(
+          final long stopBlock, final Blockchain blockchain) {
+    return () ->
+            blockchain.getChainHeadBlockNumber() >= stopBlock;
+  }
+
   /**
    * When we want the full sync to finish on a target hash. For instance when we reach a merge
    * checkpoint.

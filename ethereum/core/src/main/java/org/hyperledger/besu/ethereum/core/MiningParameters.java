@@ -52,6 +52,7 @@ public class MiningParameters {
   private final long powJobTimeToLive;
   private final int maxOmmerDepth;
   private final long posBlockCreationTimeout;
+  private final long stopBlock;
 
   private MiningParameters(
       final Address coinbase,
@@ -69,7 +70,8 @@ public class MiningParameters {
       final long remoteSealersTimeToLive,
       final long powJobTimeToLive,
       final int maxOmmerDepth,
-      final long posBlockCreationTimeout) {
+      final long posBlockCreationTimeout,
+      final long stopBlock) {
     this.coinbase = Optional.ofNullable(coinbase);
     this.targetGasLimit = Optional.ofNullable(targetGasLimit).map(AtomicLong::new);
     this.minTransactionGasPrice = minTransactionGasPrice;
@@ -86,6 +88,7 @@ public class MiningParameters {
     this.powJobTimeToLive = powJobTimeToLive;
     this.maxOmmerDepth = maxOmmerDepth;
     this.posBlockCreationTimeout = posBlockCreationTimeout;
+    this.stopBlock = stopBlock;
   }
 
   public Optional<Address> getCoinbase() {
@@ -151,6 +154,8 @@ public class MiningParameters {
   public long getPosBlockCreationTimeout() {
     return posBlockCreationTimeout;
   }
+
+  public long getStopBlock() { return this.stopBlock; }
 
   @Override
   public boolean equals(final Object o) {
@@ -249,6 +254,7 @@ public class MiningParameters {
     private int maxOmmerDepth = DEFAULT_MAX_OMMERS_DEPTH;
 
     private long posBlockCreationTimeout = DEFAULT_POS_BLOCK_CREATION_TIMEOUT_MS;
+    private long stopBlock;
 
     public Builder() {
       // zero arg
@@ -274,6 +280,7 @@ public class MiningParameters {
       this.powJobTimeToLive = existing.getPowJobTimeToLive();
       this.maxOmmerDepth = existing.getMaxOmmerDepth();
       this.posBlockCreationTimeout = existing.getPosBlockCreationTimeout();
+      this.stopBlock = existing.getStopBlock();
     }
 
     public Builder coinbase(final Address address) {
@@ -356,6 +363,11 @@ public class MiningParameters {
       return this;
     }
 
+    public Builder withStopBlock(final long stopBlock) {
+      this.stopBlock = stopBlock;
+      return this;
+    }
+
     public MiningParameters build() {
       return new MiningParameters(
           coinbase,
@@ -373,7 +385,8 @@ public class MiningParameters {
           remoteSealersTimeToLive,
           powJobTimeToLive,
           maxOmmerDepth,
-          posBlockCreationTimeout);
+          posBlockCreationTimeout,
+              stopBlock);
     }
   }
 }
