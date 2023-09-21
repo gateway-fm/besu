@@ -1073,9 +1073,8 @@ public class BesuCommand implements DefaultCommandValues, Runnable {
     private final Bytes extraData = DEFAULT_EXTRA_DATA;
 
     @Option(
-            names = { "--miner-stop-block" },
-            description = "The block height at which to stop block production"
-    )
+        names = {"--miner-stop-block"},
+        description = "The block height at which to stop block production")
     private final Integer stopBlock = 0;
   }
 
@@ -2136,7 +2135,7 @@ public class BesuCommand implements DefaultCommandValues, Runnable {
                 .remoteSealersTimeToLive(unstableMiningOptions.getRemoteSealersTimeToLive())
                 .powJobTimeToLive(unstableMiningOptions.getPowJobTimeToLive())
                 .maxOmmerDepth(unstableMiningOptions.getMaxOmmersDepth())
-                    .withStopBlock(minerOptionGroup.stopBlock)
+                .withStopBlock(minerOptionGroup.stopBlock)
                 .build())
         .transactionPoolConfiguration(buildTransactionPoolConfiguration())
         .nodeKey(new NodeKey(securityModule()))

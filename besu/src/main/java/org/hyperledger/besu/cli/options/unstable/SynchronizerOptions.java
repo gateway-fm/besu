@@ -274,10 +274,7 @@ public class SynchronizerOptions implements CLIOptions<SynchronizerConfiguration
   private int snapsyncTrieNodeCountPerRequest =
       SnapSyncConfiguration.DEFAULT_TRIENODE_COUNT_PER_REQUEST;
 
-  @CommandLine.Option(
-          names = STOP_BLOCK,
-          description = "The height to stop syncing blocks at"
-  )
+  @CommandLine.Option(names = STOP_BLOCK, description = "The height to stop syncing blocks at")
   private final Integer stopBlock = 0;
 
   private SynchronizerOptions() {}

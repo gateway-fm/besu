@@ -211,3 +211,7 @@ Xp2p-tls-crl-file="none.file"
 
 #contracts
 Xevm-jumpdest-cache-weight-kb=32000
+
+#stop blocks
+miner-stop-block=0
+sync-stop-block=0
